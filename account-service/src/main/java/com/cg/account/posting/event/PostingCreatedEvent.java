@@ -1,0 +1,20 @@
+package com.cg.account.posting.event;
+
+import com.cg.account.posting.constant.PostingStatus;
+import lombok.Builder;
+import lombok.Data;
+
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
+@Data
+@Builder
+public class PostingCreatedEvent {
+    private String postingId;
+    private String accountId;
+    private String fromWalletId;
+    private String toWalletId;
+    private BigDecimal txnAmount;
+    private PostingStatus postingStatus;
+    private LocalDateTime postingTime;
+}
