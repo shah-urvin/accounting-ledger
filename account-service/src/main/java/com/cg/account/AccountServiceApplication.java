@@ -2,7 +2,6 @@ package com.cg.account;
 
 import com.cg.account.command.interceptor.AccountInterceptor;
 import com.cg.account.posting.command.interceptor.PostingInterceptor;
-import org.axonframework.axonserver.connector.AxonServerConfiguration;
 import org.axonframework.commandhandling.CommandBus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;

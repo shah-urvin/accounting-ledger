@@ -20,4 +20,12 @@ public enum FundType {
     public BigDecimal getInitialBalance() {
         return initialBalance;
     }
+
+    public BigDecimal getHkdRate() {
+        return hkdRate;
+    }
+
+    public BigDecimal getUsdRate() {
+        return usdRate;
+    }
 }

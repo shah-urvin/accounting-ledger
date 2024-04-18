@@ -4,7 +4,6 @@ import com.cg.account.entity.Account;
 import com.cg.account.entity.Wallet;
 import com.cg.account.posting.constant.PostingStatus;
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

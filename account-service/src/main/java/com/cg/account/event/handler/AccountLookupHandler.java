@@ -28,7 +28,7 @@ public class AccountLookupHandler {
     @EventHandler
     public void on(AccountOpenedEvent accountOpenedEvent) {
         logger.info("AccountLookupHandler get called with accountId:{}",accountOpenedEvent.getAccountId());
-        accountOpenedEvent.getWallets().values().stream().forEach(walletId -> {
+        accountOpenedEvent.getWallets().stream().forEach(walletId -> {
             AccountLookup accountLookup = new AccountLookup();
             accountLookup.setAccountId(accountOpenedEvent.getAccountId());
             accountLookup.setWalletId(walletId);

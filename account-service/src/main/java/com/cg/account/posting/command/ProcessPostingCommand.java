@@ -5,11 +5,18 @@ import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+
 @Data
 @Builder
-public class PostingStatusChangeCommand {
+public class ProcessPostingCommand {
     @TargetAggregateIdentifier
     private String postingId;
     private String accountId;
     private PostingStatus postingStatus;
+    private String fromWalletId;
+    private String toWalletId;
+    private BigDecimal txnAmount;
+    private LocalDateTime postingTime;
 }

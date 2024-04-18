@@ -1,13 +1,12 @@
 package com.cg.account.event;
 
 import com.cg.account.constants.AccountStatus;
-import com.cg.account.constants.AssetType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 @Builder
@@ -15,5 +14,5 @@ import java.util.Map;
 public class AccountOpenedEvent {
     private String accountId;
     private AccountStatus status;
-    private Map<AssetType,String> wallets = new HashMap<>();
+    private List<String> wallets = new ArrayList<>();
 }

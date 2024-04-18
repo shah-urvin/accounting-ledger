@@ -1,21 +1,11 @@
 package com.cg.account.posting.event.handler;
 
-import com.cg.account.entity.Account;
-import com.cg.account.entity.Wallet;
-import com.cg.account.exception.AccountNotFoundException;
-import com.cg.account.posting.entity.Posting;
-import com.cg.account.posting.event.PostingCreatedEvent;
 import com.cg.account.posting.repository.PostingRepository;
 import com.cg.account.repository.AccountRepository;
-import org.axonframework.eventhandling.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @Component
@@ -29,7 +19,7 @@ public class PostingEventHandler {
 
     public static final Logger logger = LoggerFactory.getLogger(PostingEventHandler.class);
 
-    @Async
+    /*@Async
     @EventHandler
     public void on(PostingCreatedEvent postingCreatedEvent) {
         logger.info("PostingCreatedEvent invoked from PostingEventHandler...");
@@ -49,5 +39,5 @@ public class PostingEventHandler {
             postingRepository.save(posting);
             logger.info("PostingCreatedEvent posted in DB with the postingId:{}",postingCreatedEvent.getPostingId());
         }
-    }
+    }*/
 }

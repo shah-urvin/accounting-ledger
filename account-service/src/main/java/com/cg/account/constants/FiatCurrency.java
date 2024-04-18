@@ -1,7 +1,5 @@
 package com.cg.account.constants;
 
-import lombok.Data;
-
 import java.math.BigDecimal;
 
 public enum FiatCurrency {

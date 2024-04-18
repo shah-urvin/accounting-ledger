@@ -22,4 +22,10 @@ public class PostingCommandController {
         postingCommandService.createPosting(lstPostingDTO);
         return ResponseEntity.accepted().build();
     }
+
+    @PutMapping("/{accountId}/posting")
+    public ResponseEntity updatePostingStatus(@PathVariable(value = "accountId") String accountId, @Valid @RequestBody List<PostingDTO> lstPostingDTO)   {
+        lstPostingDTO.stream().forEach(postingDTO -> postingDTO.setAccountId(accountId));
+        return ResponseEntity.accepted().build();
+    }
 }

@@ -1,5 +1,6 @@
 package com.cg.account.posting.dto;
 
+import com.cg.account.posting.constant.PostingStatus;
 import lombok.Builder;
 import lombok.Data;
 
@@ -13,6 +14,7 @@ public class PostingDTO {
     private String accountId;
     private String fromWalletId;
     private String toWalletId;
+    private PostingStatus postingStatus;
     private BigDecimal txnAmount;
     private LocalDateTime postingTime;
 }

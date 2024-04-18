@@ -2,9 +2,7 @@ package com.cg.account.entity;
 
 import com.cg.account.constants.AssetType;
 import com.cg.account.constants.FundType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,6 +15,7 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 public class FundWallet extends Wallet{
     @Column(name = "fund_name")
+    @Enumerated(EnumType.STRING)
     private FundType fundName;
 
     @Column(name = "balance")

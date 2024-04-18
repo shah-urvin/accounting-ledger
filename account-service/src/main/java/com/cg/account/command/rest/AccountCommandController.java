@@ -1,8 +1,8 @@
 package com.cg.account.command.rest;
 
+import com.cg.account.command.service.AccountCommandService;
 import com.cg.account.dto.AccountDTO;
 import com.cg.account.exception.AccountNotFoundException;
-import com.cg.account.command.service.AccountCommandService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
