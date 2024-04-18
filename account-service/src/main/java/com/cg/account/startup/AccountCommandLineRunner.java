@@ -1,6 +1,7 @@
 package com.cg.account.startup;
 
 import com.cg.account.command.OpenAccountCommand;
+import com.cg.account.constants.AccountStatus;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.env.Environment;
@@ -21,6 +22,7 @@ public class AccountCommandLineRunner implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        commandGateway.send(OpenAccountCommand.builder().accountId(UUID.randomUUID().toString()).build());
+        commandGateway.send(OpenAccountCommand.builder().accountId(UUID.randomUUID().toString())
+                .accountStatus(AccountStatus.OPEN).build());
     }
 }

@@ -3,6 +3,7 @@ package com.cg.account.aggregate;
 import com.cg.account.command.ChangeAccountStatusCommand;
 import com.cg.account.command.ChangeWalletBalanceCommand;
 import com.cg.account.command.OpenAccountCommand;
+import com.cg.account.command.model.*;
 import com.cg.account.constants.*;
 import com.cg.account.entity.*;
 import com.cg.account.event.AccountOpenedEvent;
@@ -20,7 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,7 +35,7 @@ public class AccountAggregate {
     @AggregateIdentifier
     private String accountId;
     private AccountStatus accountStatus;
-    private List<String> wallets;
+    private Map<AssetType, WalletModel> wallets = new HashMap<>();
 
     private AccountRepository accountRepository;
 
@@ -44,9 +47,10 @@ public class AccountAggregate {
     public AccountAggregate(OpenAccountCommand openAccountCommand,AccountRepository accountRepository) {
         this.accountRepository = accountRepository;
         // Create Account and wallets.
-        List<String> lstWallets = this.openAccount(openAccountCommand);
+
+        openAccount(openAccountCommand);
         apply(AccountOpenedEvent.builder()
-        .wallets(lstWallets)
+        .wallets(this.wallets)
                 .accountId(openAccountCommand.getAccountId())
                 .status(AccountStatus.OPEN).build());
     }
@@ -86,81 +90,64 @@ public class AccountAggregate {
         apply(walletBalanceChangedEvent);
     }
 
-    private List<String> openAccount(OpenAccountCommand openAccountCommand) {
+    private void openAccount(OpenAccountCommand openAccountCommand) {
         // Create Account
-        Account account = new Account();
-        account.setAccountId(openAccountCommand.getAccountId());
-        account.setStatus(AccountStatus.OPEN);
+
 
         // Create 5 Wallets (USDWallet,HKDWallet,CryptoWallet,StockWallet
         // Adding USD Wallet
-        account.getWallets().add(USDWallet.builder()
-                .account(account)
+        this.wallets.put(AssetType.FIAT_USD, USDWalletModel.builder()
+                .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balance(FiatCurrency.USD.getInitialBalance()).build());
 
         // Adding HKD Wallet
-        account.getWallets().add(HKDWallet.builder()
-                .account(account)
+        this.wallets.put(AssetType.FIAT_HKD, HKDWalletModel.builder()
+                .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balance(FiatCurrency.HKD.getInitialBalance()).build());
 
         // Adding the Crypto Wallet
-        account.getWallets().add(CryptoWallet.builder()
-                .account(account)
+        this.wallets.put(AssetType.CRYPTO, CryptoWalletModel.builder()
+                .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balanceQty(CryptoType.BTC.getInitalBalance())
                 .cryptoType(CryptoType.BTC).build());
 
         // Adding the Stock Wallet
-        account.getWallets().add(StockWallet.builder()
-                .account(account)
+        this.wallets.put(AssetType.STOCK, StockWalletModel.builder()
+                .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balanceQty(StockSymbol.CAPGEMINI.getInitialBalance())
                 .stockSymbol(StockSymbol.CAPGEMINI).build());
 
         // Adding the Fund Wallet
-        account.getWallets().add(FundWallet.builder()
-                .account(account)
+        this.wallets.put(AssetType.FUND,FundWalletModel.builder()
+                .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balance(FundType.HSBC_SMALL_CAP.getInitialBalance())
                 .fundName(FundType.HSBC_SMALL_CAP).build());
 
-        accountRepository.save(account);
-        logger.info("AccountId "+openAccountCommand.getAccountId()+ " saved in the Database successfully...");
-        return account.getWallets().stream()
-                .map(Wallet::getWalletId)
-                .collect(Collectors.toList());
-
+        logger.info("AccountId "+openAccountCommand.getAccountId()+ " all Wallets been created...");
     }
 
     private void changeAccountStatus(ChangeAccountStatusCommand changeAccountStatusCommand) {
-        Account account = accountRepository.findById(changeAccountStatusCommand.getAccountId()).orElseThrow(() -> new AccountNotFoundException(changeAccountStatusCommand.getAccountId()));
 
         switch (changeAccountStatusCommand.getStatus()) {
             case CLOSED -> {
-                if (account.getStatus() == AccountStatus.OPEN) {
-                    account.setStatus(AccountStatus.CLOSED);
-                }
+                this.accountStatus = AccountStatus.CLOSED;
                 break;
             }
             case HOLD -> {
-                if (account.getStatus() != AccountStatus.HOLD) {
-                    account.setStatus(AccountStatus.HOLD);
-                }
+                this.accountStatus = AccountStatus.HOLD;
                 break;
             }
             case RELEASE -> {
-                if (account.getStatus() == AccountStatus.HOLD) {
-                    account.setStatus(AccountStatus.OPEN);
-                }
+                this.accountStatus= AccountStatus.OPEN;
                 break;
             }
             default -> throw new InvalidAccountStatusException(changeAccountStatusCommand.getStatus());
         }
-
-        // Save Account entity to DB
-        accountRepository.save(account);
     }
 
     private void changeWalletBalance(ChangeWalletBalanceCommand changeWalletBalanceCommand) {

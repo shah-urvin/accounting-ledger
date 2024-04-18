@@ -28,10 +28,10 @@ public class AccountLookupHandler {
     @EventHandler
     public void on(AccountOpenedEvent accountOpenedEvent) {
         logger.info("AccountLookupHandler get called with accountId:{}",accountOpenedEvent.getAccountId());
-        accountOpenedEvent.getWallets().stream().forEach(walletId -> {
+        accountOpenedEvent.getWallets().values().stream().forEach(wallet -> {
             AccountLookup accountLookup = new AccountLookup();
             accountLookup.setAccountId(accountOpenedEvent.getAccountId());
-            accountLookup.setWalletId(walletId);
+            accountLookup.setWalletId(wallet.getWalletId());
             accountLookupRepository.save(accountLookup);
         });
         logger.info("accountOpenedEvent completed...");

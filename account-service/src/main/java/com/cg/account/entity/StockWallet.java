@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @Table(name = "stock_wallet")
@@ -20,8 +22,8 @@ public class StockWallet extends Wallet{
     private Long balanceQty;
 
     @Builder
-    public StockWallet(String walletId, Account account, StockSymbol stockSymbol,Long balanceQty) {
-        super(walletId,account, AssetType.STOCK);
+    public StockWallet(String walletId, Account account, StockSymbol stockSymbol, Long balanceQty, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.STOCK,timestamp);
         this.stockSymbol=stockSymbol;
         this.balanceQty = balanceQty;
     }

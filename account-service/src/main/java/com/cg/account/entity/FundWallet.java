@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Data
@@ -22,8 +23,8 @@ public class FundWallet extends Wallet{
     private BigDecimal balance;
 
     @Builder
-    public FundWallet(String walletId, Account account, FundType fundName,BigDecimal balance) {
-        super(walletId,account, AssetType.FUND);
+    public FundWallet(String walletId, Account account, FundType fundName,BigDecimal balance, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.FUND,timestamp);
         this.fundName = fundName;
         this.balance = balance;
     }
