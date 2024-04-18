@@ -12,6 +12,8 @@ import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.SagaLifecycle;
 import org.axonframework.modelling.saga.StartSaga;
 import org.axonframework.spring.stereotype.Saga;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 
@@ -21,12 +23,12 @@ public class PostingSaga {
     @Inject
     private transient CommandGateway commandGateway;
 
-//    private static final Logger logger = LoggerFactory.getLogger(PostingSaga.class);
+    private static final Logger logger = LoggerFactory.getLogger(PostingSaga.class);
 
     @StartSaga
     @SagaEventHandler(associationProperty = "postingId")
     public void handle(PostingCreatedEvent postingCreatedEvent) {
-        System.out.println("PostingCreatedEvent event invoked...");
+        logger.info("PostingCreatedEvent event invoked...");
         // Send ProcessPostingCommand
 
         // associate Saga with ProcessPosting.
@@ -45,7 +47,7 @@ public class PostingSaga {
 
     @SagaEventHandler(associationProperty = "postingId")
     public void handle(PostingProcessedEvent postingProcessedEvent) {
-        System.out.println("PostingProcessedEvent get invoked...");
+        logger.info("PostingProcessedEvent get invoked...");
         /*associateWith("changedPostingId",
                 postingProcessedEvent.getProcessedPostingId());*/
         if(postingProcessedEvent.getPostingStatus().equals(PostingStatus.CLEARED)) {
@@ -70,7 +72,7 @@ public class PostingSaga {
 
     @SagaEventHandler(associationProperty = "postingId")
     public void handle(PostingChangedEvent postingChangedEvent){
-        System.out.println("PostingChangedEvent get invoked...");
+        logger.info("PostingChangedEvent get invoked...");
 
         // End Saga.
         SagaLifecycle.end();
