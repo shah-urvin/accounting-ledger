@@ -1,7 +1,9 @@
 package com.cg.account.posting.aggregate;
 
 import com.cg.account.exception.PostingNotFoundException;
+import com.cg.account.posting.command.RevertCreatedPostingCommand;
 import com.cg.account.posting.entity.Posting;
+import com.cg.account.posting.event.PostingCreatedRevertedEvent;
 import com.cg.account.posting.repository.PostingRepository;
 import com.cg.account.posting.command.ChangePostingCommand;
 import com.cg.account.posting.command.CreatePostingCommand;
@@ -98,6 +100,31 @@ public class PostingAggregate {
         this.accountId = postingChangedEvent.getAccountId();
         this.postingTime = posting.getPostingTime();
         this.postingStatus = postingChangedEvent.getPostingStatus();
+    }
+
+    @CommandHandler
+    public void on(RevertCreatedPostingCommand revertCreatedPostingCommand,PostingRepository postingRepository) {
+        this.postingRepository = postingRepository;
+        logger.info("RevertCreatedPostingCommand get invoked..");
+
+        Posting posting = postingRepository.findById(revertCreatedPostingCommand.getPostingId()).orElseThrow(() -> new PostingNotFoundException(revertCreatedPostingCommand.getPostingId()));
+        posting.setPostingStatus(revertCreatedPostingCommand.getPostingStatus());
+        posting.setPostingTime(LocalDateTime.now());
+        postingRepository.save(posting);
+
+        apply(PostingCreatedRevertedEvent.builder()
+                .accountId(revertCreatedPostingCommand.getAccountId())
+                .postingId(revertCreatedPostingCommand.getPostingId())
+                .postingStatus(revertCreatedPostingCommand.getPostingStatus())
+                .build());
+    }
+
+    @EventSourcingHandler
+    public void on(PostingCreatedRevertedEvent postingCreatedRevertedEvent) {
+        logger.info("PostingCreatedRevertedEvent get invoked...");
+        this.postingId=postingCreatedRevertedEvent.getPostingId();
+        this.accountId=postingCreatedRevertedEvent.getAccountId();
+        this.postingStatus=postingCreatedRevertedEvent.getPostingStatus();
     }
 
     private void createPosting(PostingCreatedEvent postingCreatedEvent) {

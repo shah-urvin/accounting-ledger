@@ -5,6 +5,7 @@ import com.cg.account.posting.command.ChangePostingCommand;
 import com.cg.account.constants.AccountStatus;
 import com.cg.account.constants.PostingStatus;
 import com.cg.account.event.AccountUpdateProcessedEvent;
+import com.cg.account.posting.command.RevertCreatedPostingCommand;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
 import org.axonframework.commandhandling.CommandCallback;
@@ -51,13 +52,20 @@ public class PostingSaga {
                                          @Nonnull CommandResultMessage<?> commandResultMessage) {
                         if(commandResultMessage.isExceptional()) {
                             // Start a compensating transaction
+                            logger.info("ProcessUpdateAccountCommand failed to process, we need to initiate the rollback the CreatePostingCommand");
+                            commandGateway.send(RevertCreatedPostingCommand.builder()
+                                    .postingId(postingCreatedEvent.getPostingId())
+                                    .accountId(postingCreatedEvent.getAccountId())
+                                    .postingStatus(PostingStatus.FAILED)
+                                    .build());
                         }
                     }
                 });
     }
 
-    @SagaEventHandler(associationProperty = "accountId")
+    @SagaEventHandler(associationProperty = "postingId")
     public void handle(AccountUpdateProcessedEvent accountUpdateProcessedEvent) {
+        logger.info("AccountUpdateProcessedEvent from posting saga get called.");
         commandGateway.send(ChangePostingCommand.builder()
                 .postingId(accountUpdateProcessedEvent.getPostingId())
                 .accountId(accountUpdateProcessedEvent.getAccountId())

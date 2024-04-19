@@ -74,7 +74,13 @@ accounting-ledger is a microservice which perform ledger posting operations. I w
         "toWalletId" : "bc15da8c-e831-4d8b-93bf-4f0daf0fc089",
         "txnAmount" : 300.0
     }]
-    
+* Since we are using the H2 In memory database, one can get the accountId, fromWalletId and toWalletId from the DB tables.
+  ![img.png](img.png)
+  Once the application run you can access it : localhost:8080/h2-console/
+  JDBC URL : jdbc:h2:mem:testdb
+  User name : sa
+  Password : password
+  ![img_1.png](img_1.png)gi
 ## Assumptions
 * This ledger will perform the transaction from one Asset to another Asset of the same account.
 * If an Account's status is OPEN then only postings allowed.
