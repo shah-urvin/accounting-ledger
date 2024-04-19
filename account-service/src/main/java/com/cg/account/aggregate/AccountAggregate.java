@@ -3,16 +3,21 @@ package com.cg.account.aggregate;
 import com.cg.account.command.ChangeAccountStatusCommand;
 import com.cg.account.command.ChangeWalletBalanceCommand;
 import com.cg.account.command.OpenAccountCommand;
+import com.cg.account.command.ProcessUpdateAccountCommand;
 import com.cg.account.command.model.*;
 import com.cg.account.constants.*;
 import com.cg.account.entity.*;
 import com.cg.account.event.AccountOpenedEvent;
 import com.cg.account.event.AccountStatusChangedEvent;
+import com.cg.account.event.AccountUpdateProcessedEvent;
 import com.cg.account.event.WalletBalanceChangedEvent;
 import com.cg.account.exception.AccountNotFoundException;
 import com.cg.account.exception.InvalidAccountStatusException;
 import com.cg.account.exception.WalletNotFoundException;
+import com.cg.account.posting.dto.WalletChangeDTO;
 import com.cg.account.repository.AccountRepository;
+import com.cg.account.transaction.WalletOperations;
+import com.cg.account.transaction.factory.WalletOperationsFactory;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -25,8 +30,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
+import static com.cg.account.constants.AssetType.*;
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;
 
 @Aggregate
@@ -64,11 +69,12 @@ public class AccountAggregate {
     }
 
     @CommandHandler
-    public void handle(ChangeAccountStatusCommand changeAccountStatusCommand,AccountRepository accountRepository) {
+    public void handle(ChangeAccountStatusCommand changeAccountStatusCommand) {
         this.accountRepository = accountRepository;
         logger.info("ChangeAccountStatusCommand get called..."+changeAccountStatusCommand.getAccountId());
-        changeAccountStatus(changeAccountStatusCommand);
-        apply(AccountStatusChangedEvent.builder().accountId(changeAccountStatusCommand.getAccountId()).status(changeAccountStatusCommand.getStatus()).build());
+        apply(AccountStatusChangedEvent.builder()
+                .accountId(changeAccountStatusCommand.getAccountId())
+                .status(changeAccountStatusCommand.getStatus().equals(AccountStatus.RELEASE)?AccountStatus.OPEN:changeAccountStatusCommand.getStatus()).build());
     }
 
     @EventSourcingHandler
@@ -79,21 +85,29 @@ public class AccountAggregate {
     }
 
     @CommandHandler
-    public void on(ChangeWalletBalanceCommand changeWalletBalanceCommand,AccountRepository accountRepository) {
+    public void on(ProcessUpdateAccountCommand processUpdateAccountCommand,AccountRepository accountRepository) {
+        logger.info("ProcessUpdateAccountCommand invoked...");
         this.accountRepository = accountRepository;
-        logger.info("Command ChangeWalletBalanceCommand invoked...");
-        // Change the newBalance to Wallet
-        changeWalletBalance(changeWalletBalanceCommand);
+        this.accountId = processUpdateAccountCommand.getAccountId();
+        processWalletBalance(processUpdateAccountCommand);
+        apply(AccountUpdateProcessedEvent.builder()
+                .accountId(processUpdateAccountCommand.getAccountId())
+                .postingId(processUpdateAccountCommand.getPostingId())
+                .fromWalletId(processUpdateAccountCommand.getFromWalletId())
+                .toWalletId(processUpdateAccountCommand.getToWalletId())
+                .txnAmount(processUpdateAccountCommand.getTxnAmount())
+                .build());
+    }
 
-        WalletBalanceChangedEvent walletBalanceChangedEvent = new WalletBalanceChangedEvent();
-        BeanUtils.copyProperties(changeWalletBalanceCommand, walletBalanceChangedEvent);
-        apply(walletBalanceChangedEvent);
+    @EventSourcingHandler
+    public void on(AccountUpdateProcessedEvent accountUpdateProcessedEvent) {
+        logger.info("AccountUpdateProcessedEvent event invoked...");
+        this.accountId = accountUpdateProcessedEvent.getAccountId();
+        this.accountStatus =accountUpdateProcessedEvent.getAccountStatus();
     }
 
     private void openAccount(OpenAccountCommand openAccountCommand) {
         // Create Account
-
-
         // Create 5 Wallets (USDWallet,HKDWallet,CryptoWallet,StockWallet
         // Adding USD Wallet
         this.wallets.put(AssetType.FIAT_USD, USDWalletModel.builder()
@@ -102,7 +116,7 @@ public class AccountAggregate {
                 .balance(FiatCurrency.USD.getInitialBalance()).build());
 
         // Adding HKD Wallet
-        this.wallets.put(AssetType.FIAT_HKD, HKDWalletModel.builder()
+        this.wallets.put(FIAT_HKD, HKDWalletModel.builder()
                 .accountId(openAccountCommand.getAccountId())
                 .walletId(UUID.randomUUID().toString())
                 .balance(FiatCurrency.HKD.getInitialBalance()).build());
@@ -131,78 +145,85 @@ public class AccountAggregate {
         logger.info("AccountId "+openAccountCommand.getAccountId()+ " all Wallets been created...");
     }
 
-    private void changeAccountStatus(ChangeAccountStatusCommand changeAccountStatusCommand) {
+    /**
+     * processWalletBalance method calculate the balance and update the balance
+     * @param processUpdateAccountCommand
+     */
+    private void processWalletBalance(ProcessUpdateAccountCommand processUpdateAccountCommand) {
+        Account account = accountRepository.findById(processUpdateAccountCommand.getAccountId()).orElseThrow(() -> new AccountNotFoundException(processUpdateAccountCommand.getAccountId()));
+        Wallet fromWallet = getWalletByWalletId(account.getWallets(),processUpdateAccountCommand.getFromWalletId());
+        Wallet toWallet = getWalletByWalletId(account.getWallets(),processUpdateAccountCommand.getToWalletId());
+        WalletOperations fromWalletOperations = WalletOperationsFactory.getWalletOperations(fromWallet.getAssetType());
+        WalletOperations toWalletOperations = WalletOperationsFactory.getWalletOperations(toWallet.getAssetType());
 
-        switch (changeAccountStatusCommand.getStatus()) {
-            case CLOSED -> {
-                this.accountStatus = AccountStatus.CLOSED;
-                break;
-            }
-            case HOLD -> {
-                this.accountStatus = AccountStatus.HOLD;
-                break;
-            }
-            case RELEASE -> {
-                this.accountStatus= AccountStatus.OPEN;
-                break;
-            }
-            default -> throw new InvalidAccountStatusException(changeAccountStatusCommand.getStatus());
-        }
+        // Perform debit and credit Operations
+        fromWalletOperations.debit(fromWallet, processUpdateAccountCommand.getTxnAmount());
+        toWalletOperations.credit(fromWallet,toWallet,processUpdateAccountCommand.getTxnAmount());
+        account.getWallets().add(fromWallet);
+        account.getWallets().add(toWallet);
+        accountRepository.save(account);
+
+        // Update the current state of the Account;
+        this.accountId = processUpdateAccountCommand.getAccountId();
+        this.accountStatus = processUpdateAccountCommand.getAccountStatus();
+        updateWallets((account.getWallets()));
     }
 
-    private void changeWalletBalance(ChangeWalletBalanceCommand changeWalletBalanceCommand) {
-        Account account = accountRepository.findById(changeWalletBalanceCommand.getAccountId()).orElseThrow(() -> new AccountNotFoundException(changeWalletBalanceCommand.getAccountId()));
-        Wallet accountWallet = account.getWallets().stream()
-                .filter(wallet -> wallet.getWalletId().equals(changeWalletBalanceCommand.getWalletId()))
-                .findFirst()
-                .orElseThrow(() -> new WalletNotFoundException(changeWalletBalanceCommand.getWalletId(), changeWalletBalanceCommand.getAccountId()));
-        if(accountWallet != null) {
-            switch (changeWalletBalanceCommand.getAssetType()) {
-                case FIAT_USD -> {
-                    if(accountWallet instanceof USDWallet) {
-                        USDWallet usdWallet = (USDWallet) accountWallet;
-                        usdWallet.setBalance(changeWalletBalanceCommand.getNewWalletBalance());
-                        account.getWallets().add(usdWallet);
-                    }
-                    break;
-                }
+    /**
+     * This method updates the Wallet with respective AssetType
+     * @param lstWallets
+     */
+    private void updateWallets(List<Wallet> lstWallets) {
+        lstWallets.stream().forEach(wallet -> {
+            switch (wallet.getAssetType()) {
                 case FIAT_HKD -> {
-                    if(accountWallet instanceof HKDWallet) {
-                        HKDWallet hkdWallet = (HKDWallet) accountWallet;
-                        hkdWallet.setBalance(changeWalletBalanceCommand.getNewWalletBalance());
-                        account.getWallets().add(hkdWallet);
-                    }
-                    break;
+                    HKDWallet hkdWallet = (HKDWallet) wallet;
+                    this.wallets.put(FIAT_HKD,HKDWalletModel.builder()
+                            .accountId(hkdWallet.getAccount().getAccountId())
+                            .walletId(hkdWallet.getWalletId())
+                            .balance(hkdWallet.getBalance())
+                            .build());
                 }
-                case STOCK -> {
-                    if(accountWallet instanceof StockWallet) {
-                        StockWallet stockWallet = (StockWallet) accountWallet;
-                        stockWallet.setStockSymbol(changeWalletBalanceCommand.getStockSymbol());
-                        stockWallet.setBalanceQty(changeWalletBalanceCommand.getNewWalletBalance().longValue());
-                        account.getWallets().add(stockWallet);
-                    }
-                    break;
+                case FIAT_USD -> {
+                    USDWallet usdWallet = (USDWallet) wallet;
+                    this.wallets.put(FIAT_USD,USDWalletModel.builder()
+                            .walletId(usdWallet.getWalletId())
+                            .balance(usdWallet.getBalance())
+                            .build());
                 }
                 case CRYPTO -> {
-                    if(accountWallet instanceof CryptoWallet) {
-                        CryptoWallet cryptoWallet = (CryptoWallet) accountWallet;
-                        cryptoWallet.setCryptoType(changeWalletBalanceCommand.getCryptoType());
-                        cryptoWallet.setBalanceQty(changeWalletBalanceCommand.getNewWalletBalance());
-                        account.getWallets().add(cryptoWallet);
-                    }
-                    break;
+                    CryptoWallet cryptoWallet =(CryptoWallet) wallet;
+                    this.wallets.put(CRYPTO,CryptoWalletModel.builder()
+                            .accountId(cryptoWallet.getAccount().getAccountId())
+                            .balanceQty(cryptoWallet.getBalanceQty())
+                            .cryptoType(cryptoWallet.getCryptoType())
+                            .build());
+
+                }
+                case STOCK -> {
+                    StockWallet stockWallet =(StockWallet) wallet;
+                    this.wallets.put(STOCK,StockWalletModel.builder()
+                            .accountId(stockWallet.getAccount().getAccountId())
+                            .walletId(stockWallet.getWalletId())
+                            .balanceQty(stockWallet.getBalanceQty())
+                            .stockSymbol(stockWallet.getStockSymbol())
+                            .build());
                 }
                 case FUND -> {
-                    if(accountWallet instanceof FundWallet) {
-                        FundWallet fundWallet = (FundWallet) accountWallet;
-                        fundWallet.setFundName(changeWalletBalanceCommand.getFundType());
-                        fundWallet.setBalance(changeWalletBalanceCommand.getNewWalletBalance());
-                        account.getWallets().add(fundWallet);
-                    }
-                    break;
+                    FundWallet fundWallet = (FundWallet) wallet;
+                    this.wallets.put(FUND,FundWalletModel.builder()
+                            .accountId(fundWallet.getAccount().getAccountId())
+                            .walletId(fundWallet.getWalletId())
+                            .balance(fundWallet.getBalance())
+                            .fundName(fundWallet.getFundName())
+                            .build());
                 }
             }
-            accountRepository.save(account);
-        }
+        });
     }
+
+    private Wallet getWalletByWalletId(List<Wallet> lstWallets,String walletId) {
+        return lstWallets.stream().filter(wallet -> wallet.getWalletId().equals(walletId)).findFirst().get();
+    }
+
 }

@@ -20,21 +20,18 @@ public class Posting {
     @Column(name = "posting_id")
     private String postingId;
 
-    @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+    @Column(name = "account_id")
+    private String accountId;
 
     @Column(name = "posting_status")
     @Enumerated(EnumType.STRING)
     private PostingStatus postingStatus;
 
-    @ManyToOne
-    @JoinColumn(name = "from_wallet_id")
-    private Wallet fromWallet;
+    @Column(name = "from_wallet_id")
+    private String fromWalletId;
 
-    @ManyToOne
-    @JoinColumn(name = "to_wallet_id")
-    private Wallet toWallet;
+    @Column(name = "to_wallet_id")
+    private String toWalletId;
 
     @Column(name = "txn_amount")
     private BigDecimal txnAmount;

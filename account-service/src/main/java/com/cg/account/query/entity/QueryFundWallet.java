@@ -1,4 +1,4 @@
-package com.cg.account.entity;
+package com.cg.account.query.entity;
 
 import com.cg.account.constants.AssetType;
 import com.cg.account.constants.FundType;
@@ -12,9 +12,9 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table
+@Table(name = "query_fund_wallet")
 @NoArgsConstructor
-public class FundWallet extends Wallet{
+public class QueryFundWallet extends QueryWallet {
     @Column(name = "fund_name")
     @Enumerated(EnumType.STRING)
     private FundType fundName;
@@ -23,8 +23,8 @@ public class FundWallet extends Wallet{
     private BigDecimal balance;
 
     @Builder
-    public FundWallet(String walletId, Account account, FundType fundName,BigDecimal balance) {
-        super(walletId,account, AssetType.FUND);
+    public QueryFundWallet(String walletId, AccountQuery account, FundType fundName, BigDecimal balance, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.FUND,timestamp);
         this.fundName = fundName;
         this.balance = balance;
     }

@@ -3,21 +3,21 @@ package com.cg.account.constants;
 import java.math.BigDecimal;
 
 public enum StockSymbol {
-    CAPGEMINI(0l,new BigDecimal(1710.0),new BigDecimal(210.0)),
-    HSBC(0l,new BigDecimal(65.0),new BigDecimal(10.0)),
-    CITI(0l,new BigDecimal(450.0),new BigDecimal(60.0));
+    CAPGEMINI(new BigDecimal(0.0),new BigDecimal(1710.0),new BigDecimal(210.0)),
+    HSBC(new BigDecimal(0.0),new BigDecimal(65.0),new BigDecimal(10.0)),
+    CITI(new BigDecimal(0.0),new BigDecimal(450.0),new BigDecimal(60.0));
 
-    private Long initialBalance;
+    private BigDecimal initialBalance;
     private BigDecimal hkdRate;
     private BigDecimal usdRate;
 
-    StockSymbol(Long initialBalance, BigDecimal hkdRate, BigDecimal usdRate) {
+    StockSymbol(BigDecimal initialBalance, BigDecimal hkdRate, BigDecimal usdRate) {
         this.initialBalance = initialBalance;
         this.hkdRate = hkdRate;
         this.usdRate = usdRate;
     }
 
-    public Long getInitialBalance() {
+    public BigDecimal getInitialBalance() {
         return initialBalance;
     }
 

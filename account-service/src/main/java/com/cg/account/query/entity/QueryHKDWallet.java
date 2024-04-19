@@ -1,4 +1,4 @@
-package com.cg.account.entity;
+package com.cg.account.query.entity;
 
 import com.cg.account.constants.AssetType;
 import jakarta.persistence.Column;
@@ -13,15 +13,15 @@ import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name="usd_wallet")
+@Table(name="query_hkd_wallet")
 @NoArgsConstructor
-public class USDWallet extends Wallet {
+public class QueryHKDWallet extends QueryWallet {
     @Column(name = "balance")
     private BigDecimal balance;
 
     @Builder
-    public USDWallet(String walletId, Account account, BigDecimal balance) {
-        super(walletId, account, AssetType.FIAT_USD);
-        this.balance = balance;
+    public QueryHKDWallet(String walletId, AccountQuery account, BigDecimal balance, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.FIAT_HKD,timestamp);
+        this.balance=balance;
     }
 }

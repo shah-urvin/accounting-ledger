@@ -1,20 +1,20 @@
 package com.cg.account.transaction;
 
+import com.cg.account.constants.AssetType;
 import com.cg.account.entity.Wallet;
 import com.cg.account.posting.dto.WalletChangeDTO;
-import com.cg.account.posting.entity.Posting;
 
 import java.math.BigDecimal;
 
 public class CryptoWalletOperations implements WalletOperations{
 
     @Override
-    public WalletChangeDTO debit(Wallet wallet, BigDecimal txnAmount) {
-        return null;
+    public void debit(Wallet wallet, BigDecimal txnAmount) {
+
     }
 
     @Override
-    public WalletChangeDTO credit(Posting posting) {
-        return null;
+    public void credit(Wallet fromWallet,Wallet toWallet,BigDecimal txnAmount) {
+
     }
 }

@@ -1,4 +1,4 @@
-package com.cg.account.entity;
+package com.cg.account.query.entity;
 
 import com.cg.account.constants.AssetType;
 import com.cg.account.constants.StockSymbol;
@@ -7,24 +7,23 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Data
-@Table(name = "stock_wallet")
+@Table(name = "query_stock_wallet")
 @NoArgsConstructor
-public class StockWallet extends Wallet{
+public class QueryStockWallet extends QueryWallet {
     @Column(name = "stock_symbol")
     @Enumerated(EnumType.STRING)
     private StockSymbol stockSymbol;
 
     @Column(name = "balance_qty")
-    private BigDecimal balanceQty;
+    private Long balanceQty;
 
     @Builder
-    public StockWallet(String walletId, Account account, StockSymbol stockSymbol, BigDecimal balanceQty) {
-        super(walletId,account, AssetType.STOCK);
+    public QueryStockWallet(String walletId, AccountQuery account, StockSymbol stockSymbol, Long balanceQty, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.STOCK,timestamp);
         this.stockSymbol=stockSymbol;
         this.balanceQty = balanceQty;
     }

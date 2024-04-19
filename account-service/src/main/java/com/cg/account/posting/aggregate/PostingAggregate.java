@@ -48,39 +48,31 @@ public class PostingAggregate {
     private static final Logger logger = LoggerFactory.getLogger(PostingAggregate.class);
 
     private PostingRepository postingRepository;
-    private AccountRepository accountRepository;
 
     public PostingAggregate() {}
 
     @CommandHandler
-    public PostingAggregate(CreatePostingCommand createPostingCommand,AccountRepository accountRepository,PostingRepository postingRepository) {
+    public PostingAggregate(CreatePostingCommand createPostingCommand) {
         logger.info("CreatePostingCommand from PostingAggregate get called...");
-        this.accountRepository = accountRepository;
-        this.postingRepository = postingRepository;
-
-        createPostingCommand.setPostingId(UUID.randomUUID().toString());
-        createPostingCommand.setPostingStatus(PostingStatus.PENDING);
-        createPostingCommand.setPostingTime(LocalDateTime.now());
-
-        //Create Posting.
-        createPosting(createPostingCommand);
-
         // Create the Posting Event
         logger.info("Going to post the PostingCreatedEvent...");
         apply(PostingCreatedEvent.builder()
         .accountId(createPostingCommand.getAccountId())
-        .postingId(createPostingCommand.getPostingId())
+        .postingId(UUID.randomUUID().toString())
         .fromWalletId(createPostingCommand.getFromWalletId())
         .toWalletId(createPostingCommand.getToWalletId())
-        .postingStatus(createPostingCommand.getPostingStatus())
+        .postingStatus(PostingStatus.PENDING)
         .txnAmount(createPostingCommand.getTxnAmount())
-        .postingTime(createPostingCommand.getPostingTime()).build());
+        .postingTime(LocalDateTime.now()).build());
     }
 
     @EventSourcingHandler
-    public void on(PostingCreatedEvent postingCreatedEvent) {
+    public void on(PostingCreatedEvent postingCreatedEvent,PostingRepository postingRepository) {
         logger.info("PostingCreatedEvent from the PostingAggregate invoked...");
+        this.postingRepository = postingRepository;
         if(postingCreatedEvent != null) {
+            // Create a DB entry and initialize
+            createPosting(postingCreatedEvent);
             this.accountId = postingCreatedEvent.getAccountId();
             this.postingId = postingCreatedEvent.getPostingId();
             this.fromWalletId = postingCreatedEvent.getFromWalletId();
@@ -92,100 +84,52 @@ public class PostingAggregate {
     }
 
     @CommandHandler
-    public void on(ProcessPostingCommand processPostingCommand,AccountRepository accountRepository,PostingRepository postingRepository) {
-        this.accountRepository= accountRepository;
-        this.postingRepository = postingRepository;
-        logger.info("ProcessPostingCommand command invoked...");
-
-        if(processPostingCommand.getPostingStatus().equals(PostingStatus.PENDING)) {
-            try {
-                List<WalletChangeDTO> lstWalletChangeDTO = processPosting(processPostingCommand);
-                lstWalletChangeDTO.stream()
-                        .forEach(walletChangeDTO -> {
-                            apply(PostingProcessedEvent.builder()
-                                    .postingId(processPostingCommand.getPostingId())
-                                    .accountId(processPostingCommand.getAccountId())
-                                    .walletId(walletChangeDTO.getWalletId())
-                                    .newWalletBalance(walletChangeDTO.getNewWalletBalance())
-                                    .assetType(walletChangeDTO.getAssetType())
-                                    .cryptoType(walletChangeDTO.getCryptoType())
-                                    .fundType(walletChangeDTO.getFundType())
-                                    .stockSymbol(walletChangeDTO.getStockSymbol())
-                                    .timestamp(walletChangeDTO.getTimestamp())
-                                    .postingStatus(PostingStatus.CLEARED)
-                                    .build());
-                        });
-
-            } catch(InsufficientBalanceException ibe) {
-                apply(PostingProcessedEvent.builder()
-                        .postingId(processPostingCommand.getPostingId())
-                        .accountId(processPostingCommand.getAccountId())
-                        .postingStatus(PostingStatus.FAILED)
-                        .build());
-            }
-        }
-    }
-
-    /*@EventSourcingHandler
-    protected void on(PostingProcessedEvent postingProcessedEvent) {
-        logger.info("PostingProcessedEvent from postingAggregate invoked...");
-        this.postingId = postingProcessedEvent.getProcessedPostingId();
-        this.accountId = postingProcessedEvent.getAccountId();
-        this.postingStatus = postingProcessedEvent.getPostingStatus();
-    }*/
-
-    @CommandHandler
-    public void on(ChangePostingCommand changePostingCommand, PostingRepository postingRepository) {
+    public void on(ChangePostingCommand changePostingCommand) {
         logger.info("PostingStatusChangeCommand command invoked...");
         this.postingRepository = postingRepository;
         // Change Posting details
-        Posting posting = postingRepository.findById(changePostingCommand.getPostingId()).orElseThrow(() -> new PostingNotFoundException(changePostingCommand.getPostingId()));
-        posting.setPostingStatus(changePostingCommand.getPostingStatus());
+
         apply(PostingChangedEvent.builder()
         .accountId(changePostingCommand.getAccountId())
         .postingId(changePostingCommand.getPostingId())
         .postingStatus(changePostingCommand.getPostingStatus()).build());
     }
 
-    private void createPosting(CreatePostingCommand createPostingCommand) {
-        if(createPostingCommand != null &&
-                StringUtils.nonEmptyOrNull(createPostingCommand.getAccountId()) &&
-                StringUtils.nonEmptyOrNull(createPostingCommand.getFromWalletId()) &&
-                StringUtils.nonEmptyOrNull(createPostingCommand.getToWalletId())) {
+    @EventSourcingHandler
+    public void on(PostingChangedEvent postingChangedEvent, PostingRepository postingRepository) {
+        // Save to DB for query
+        this.postingRepository = postingRepository;
+        Posting posting = postingRepository.findById(postingChangedEvent.getPostingId()).orElseThrow(() -> new PostingNotFoundException(postingChangedEvent.getPostingId()));
+        posting.setPostingStatus(postingChangedEvent.getPostingStatus());
+        posting.setPostingTime(LocalDateTime.now());
+        postingRepository.save(posting);
+
+        // Save current state
+        this.postingId = postingChangedEvent.getPostingId();
+        this.accountId = postingChangedEvent.getAccountId();
+        this.postingTime = posting.getPostingTime();
+        this.postingStatus = postingChangedEvent.getPostingStatus();
+    }
+
+    private void createPosting(PostingCreatedEvent postingCreatedEvent) {
+        if(postingCreatedEvent != null &&
+                StringUtils.nonEmptyOrNull(postingCreatedEvent.getAccountId()) &&
+                StringUtils.nonEmptyOrNull(postingCreatedEvent.getFromWalletId()) &&
+                StringUtils.nonEmptyOrNull(postingCreatedEvent.getToWalletId())) {
             // Create Posting with the PENDING status
             // Retrieve Account Object
             logger.info("Retrieve Account details....");
-            Account account = accountRepository.findById(createPostingCommand.getAccountId()).orElseThrow(() -> new AccountNotFoundException(createPostingCommand.getAccountId()));
             Posting posting = new Posting();
-            posting.setPostingId(createPostingCommand.getPostingId());
-            posting.setPostingId(createPostingCommand.getPostingId());
-            posting.setAccount(account);
-            posting.setFromWallet(account.getWallets()
-                    .stream()
-                    .filter(wallet -> wallet.getWalletId().equals(createPostingCommand.getFromWalletId()))
-                    .findFirst().get());
-            posting.setToWallet(account.getWallets().stream().filter(wallet -> wallet.getWalletId().equals(createPostingCommand.getToWalletId())).findFirst().get());
-            posting.setTxnAmount(createPostingCommand.getTxnAmount());
-            posting.setPostingTime(createPostingCommand.getPostingTime());
-            posting.setPostingStatus(createPostingCommand.getPostingStatus());
+            posting.setPostingId(postingCreatedEvent.getPostingId());
+            posting.setPostingId(postingCreatedEvent.getPostingId());
+            posting.setAccountId(postingCreatedEvent.getAccountId());
+            posting.setFromWalletId(postingCreatedEvent.getFromWalletId());
+            posting.setToWalletId(postingCreatedEvent.getToWalletId());
+            posting.setTxnAmount(postingCreatedEvent.getTxnAmount());
+            posting.setPostingTime(postingCreatedEvent.getPostingTime());
+            posting.setPostingStatus(postingCreatedEvent.getPostingStatus());
             postingRepository.save(posting);
             logger.info("Posting created successfully....");
         }
-    }
-
-    private List<WalletChangeDTO> processPosting(ProcessPostingCommand processPostingCommand) {
-        logger.info("processPosting get called...");
-        Posting posting = postingRepository.findById(processPostingCommand.getPostingId()).orElseThrow(() -> new PostingNotFoundException(processPostingCommand.getPostingId()));
-        logger.info("Posting details, postingId:{},fromWalletId:{}",posting.getPostingId(),posting.getFromWallet().getWalletId());
-        WalletOperations fromWalletOperations = WalletOperationsFactory.getWalletOperations(posting.getFromWallet().getAssetType());
-        WalletOperations toWalletOperations = WalletOperationsFactory.getWalletOperations(posting.getToWallet().getAssetType());
-
-        // Perform debit and credit Operations
-        WalletChangeDTO fromWalletChangeDTO = fromWalletOperations.debit(posting.getFromWallet(), posting.getTxnAmount());
-        WalletChangeDTO toWalletChangeDTO = toWalletOperations.credit(posting);
-        List<WalletChangeDTO> lstWalletChangeDTO = new ArrayList<>();
-        lstWalletChangeDTO.add(fromWalletChangeDTO);
-        lstWalletChangeDTO.add(toWalletChangeDTO);
-        return lstWalletChangeDTO;
     }
 }

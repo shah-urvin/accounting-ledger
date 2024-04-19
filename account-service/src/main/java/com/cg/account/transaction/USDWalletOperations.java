@@ -4,7 +4,6 @@ import com.cg.account.constants.FiatCurrencyRateConstants;
 import com.cg.account.entity.*;
 import com.cg.account.exception.InsufficientBalanceException;
 import com.cg.account.posting.dto.WalletChangeDTO;
-import com.cg.account.posting.entity.Posting;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,50 +11,39 @@ import java.time.LocalDateTime;
 public class USDWalletOperations implements WalletOperations{
 
     @Override
-    public WalletChangeDTO debit(Wallet wallet, BigDecimal txnAmount) {
+    public void debit(Wallet wallet, BigDecimal txnAmount) {
         USDWallet usdWallet = (USDWallet) wallet;
         if (usdWallet.getBalance().compareTo(txnAmount) >=0) {
-            return WalletChangeDTO.builder()
-                    .accountId(usdWallet.getAccount().getAccountId())
-                    .walletId(usdWallet.getWalletId())
-                    .assetType(usdWallet.getAssetType())
-                    .newWalletBalance((usdWallet.getBalance().subtract(txnAmount)))
-                    .timestamp(LocalDateTime.now()).build();
+            usdWallet.setBalance((usdWallet.getBalance().subtract(txnAmount)));
+        } else {
+            throw new InsufficientBalanceException(usdWallet.getWalletId());
         }
-        throw new InsufficientBalanceException(usdWallet.getWalletId());
     }
 
     @Override
-    public WalletChangeDTO credit(Posting posting) {
-        USDWallet usddWallet = (USDWallet) posting.getToWallet();
-        BigDecimal usdValue = new BigDecimal(0.0);
-        switch (posting.getFromWallet().getAssetType()) {
+    public void credit(Wallet fromWallet,Wallet toWallet,BigDecimal txnAmount) {
+        USDWallet usdWallet = (USDWallet) toWallet;
+        switch (fromWallet.getAssetType()) {
             case FIAT_HKD -> {
-                usdValue = (FiatCurrencyRateConstants.HKD_TO_USD.multiply(posting.getTxnAmount()));
+                usdWallet.setBalance(usdWallet.getBalance().add(FiatCurrencyRateConstants.HKD_TO_USD.multiply(txnAmount)));
                 break;
             }
             case CRYPTO -> {
-                CryptoWallet fromWallet = (CryptoWallet) posting.getFromWallet();
-                usdValue = fromWallet.getCryptoType().getUsdRate().multiply(posting.getTxnAmount());
+                CryptoWallet cryptoWallet = (CryptoWallet) fromWallet;
+                usdWallet.setBalance(usdWallet.getBalance().add(cryptoWallet.getCryptoType().getUsdRate().multiply(txnAmount)));
                 break;
             }
             case STOCK -> {
-                StockWallet stockWallet = (StockWallet) posting.getFromWallet();
-                usdValue = stockWallet.getStockSymbol().getUsdRate().multiply(posting.getTxnAmount());
+                StockWallet stockWallet = (StockWallet) fromWallet;
+                usdWallet.setBalance(usdWallet.getBalance().add(stockWallet.getStockSymbol().getUsdRate().multiply(txnAmount)));
                 break;
             }
             case FUND -> {
-                FundWallet fundWallet = (FundWallet) posting.getFromWallet();
-                usdValue = fundWallet.getFundName().getUsdRate().multiply(posting.getTxnAmount());
+                FundWallet fundWallet = (FundWallet) fromWallet;
+                usdWallet.setBalance(usdWallet.getBalance().add(fundWallet.getFundName().getUsdRate().multiply(txnAmount)));
                 break;
             }
         }
-        return WalletChangeDTO.builder()
-                .accountId(usddWallet.getAccount().getAccountId())
-                .walletId(usddWallet.getWalletId())
-                .assetType(usddWallet.getAssetType())
-                .newWalletBalance((usddWallet.getBalance().add(usdValue)))
-                .timestamp(LocalDateTime.now()).build();
     }
 
 

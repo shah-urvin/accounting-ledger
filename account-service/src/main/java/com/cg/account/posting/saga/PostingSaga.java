@@ -1,12 +1,12 @@
 package com.cg.account.posting.saga;
 
-import com.cg.account.command.ChangeWalletBalanceCommand;
+import com.cg.account.command.ProcessUpdateAccountCommand;
+import com.cg.account.constants.AccountStatus;
+import com.cg.account.event.AccountUpdateProcessedEvent;
 import com.cg.account.posting.command.ChangePostingCommand;
-import com.cg.account.posting.command.ProcessPostingCommand;
 import com.cg.account.posting.constant.PostingStatus;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
-import com.cg.account.posting.event.PostingProcessedEvent;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.SagaLifecycle;
@@ -29,45 +29,26 @@ public class PostingSaga {
     @SagaEventHandler(associationProperty = "postingId")
     public void handle(PostingCreatedEvent postingCreatedEvent) {
         logger.info("PostingCreatedEvent event invoked...");
+
         // Send ProcessPostingCommand
 
-        // associate Saga with ProcessPosting.
-        /*associateWith("processPostingId",
-                postingCreatedEvent.getPostingId());*/
-
-        commandGateway.send(ProcessPostingCommand.builder()
+        commandGateway.send(ProcessUpdateAccountCommand.builder()
                 .accountId(postingCreatedEvent.getAccountId())
+                .accountStatus(AccountStatus.OPEN)
                 .postingId(postingCreatedEvent.getPostingId())
-                .postingStatus(postingCreatedEvent.getPostingStatus())
                 .fromWalletId(postingCreatedEvent.getFromWalletId())
                 .toWalletId(postingCreatedEvent.getToWalletId())
                 .txnAmount(postingCreatedEvent.getTxnAmount())
                 .build());
     }
 
-    @SagaEventHandler(associationProperty = "postingId")
-    public void handle(PostingProcessedEvent postingProcessedEvent) {
-        logger.info("PostingProcessedEvent get invoked...");
-        /*associateWith("changedPostingId",
-                postingProcessedEvent.getProcessedPostingId());*/
-        if(postingProcessedEvent.getPostingStatus().equals(PostingStatus.CLEARED)) {
-            commandGateway.send(ChangeWalletBalanceCommand.builder()
-                    .accountId(postingProcessedEvent.getAccountId())
-                    .assetType(postingProcessedEvent.getAssetType())
-                    .walletId(postingProcessedEvent.getWalletId())
-                    .newWalletBalance(postingProcessedEvent.getNewWalletBalance())
-                    .cryptoType(postingProcessedEvent.getCryptoType())
-                    .fundType(postingProcessedEvent.getFundType())
-                    .stockSymbol(postingProcessedEvent.getStockSymbol())
-                    .timestamp(postingProcessedEvent.getTimestamp())
-                    .build());
-        }
-
+    @SagaEventHandler(associationProperty = "accountId")
+    public void handle(AccountUpdateProcessedEvent accountUpdateProcessedEvent) {
         commandGateway.send(ChangePostingCommand.builder()
-            .postingId(postingProcessedEvent.getPostingId())
-            .accountId(postingProcessedEvent.getAccountId())
-            .postingStatus(postingProcessedEvent.getPostingStatus())
-            .build());
+                .postingId(accountUpdateProcessedEvent.getPostingId())
+                .accountId(accountUpdateProcessedEvent.getAccountId())
+                .postingStatus(PostingStatus.CLEARED)
+                .build());
     }
 
     @SagaEventHandler(associationProperty = "postingId")
@@ -76,5 +57,7 @@ public class PostingSaga {
 
         // End Saga.
         SagaLifecycle.end();
+        logger.info("Sage End, for Posting:{}",postingChangedEvent.getPostingId());
     }
+
 }

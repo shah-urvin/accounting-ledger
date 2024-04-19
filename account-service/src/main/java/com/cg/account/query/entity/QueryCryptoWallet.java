@@ -1,4 +1,4 @@
-package com.cg.account.entity;
+package com.cg.account.query.entity;
 
 import com.cg.account.constants.AssetType;
 import com.cg.account.constants.CryptoType;
@@ -11,10 +11,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "crypto_wallet")
+@Table(name = "query_crypto_wallet")
 @Data
 @NoArgsConstructor
-public class CryptoWallet extends Wallet{
+public class QueryCryptoWallet extends QueryWallet {
 
     @Column(name = "crypto_type")
     @Enumerated(EnumType.STRING)
@@ -24,8 +24,8 @@ public class CryptoWallet extends Wallet{
     private BigDecimal balanceQty;
 
     @Builder
-    public CryptoWallet(String walletId, Account account,CryptoType cryptoType,BigDecimal balanceQty) {
-        super(walletId,account, AssetType.CRYPTO);
+    public QueryCryptoWallet(String walletId, AccountQuery account, CryptoType cryptoType, BigDecimal balanceQty, LocalDateTime timestamp) {
+        super(walletId,account, AssetType.CRYPTO,timestamp);
         this.cryptoType = cryptoType;
         this.balanceQty = balanceQty;
     }

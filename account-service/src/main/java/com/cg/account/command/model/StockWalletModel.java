@@ -2,17 +2,18 @@ package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
 import com.cg.account.constants.StockSymbol;
-import com.cg.account.entity.Account;
 import lombok.Builder;
 import lombok.Data;
+
+import java.math.BigDecimal;
 
 @Data
 public class StockWalletModel extends WalletModel {
     private StockSymbol stockSymbol;
-    private Long balanceQty;
+    private BigDecimal balanceQty;
 
     @Builder
-    public StockWalletModel(String walletId, String accountId, StockSymbol stockSymbol, Long balanceQty) {
+    public StockWalletModel(String walletId, String accountId, StockSymbol stockSymbol, BigDecimal balanceQty) {
         super(walletId,accountId, AssetType.STOCK);
         this.stockSymbol=stockSymbol;
         this.balanceQty = balanceQty;
