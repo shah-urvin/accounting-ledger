@@ -1,7 +1,7 @@
 package com.cg.account.transaction.factory;
 
-import com.cg.account.constants.AssetType;
 import com.cg.account.transaction.*;
+import com.cg.account.constants.AssetType;
 
 public class WalletOperationsFactory {
     public static WalletOperations getWalletOperations(AssetType assetType) {

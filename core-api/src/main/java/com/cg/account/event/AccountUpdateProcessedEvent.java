@@ -1,7 +1,7 @@
 package com.cg.account.event;
 
-import com.cg.account.command.model.WalletModel;
 import com.cg.account.constants.AccountStatus;
+import com.cg.account.command.model.WalletModel;
 import lombok.Builder;
 import lombok.Data;
 

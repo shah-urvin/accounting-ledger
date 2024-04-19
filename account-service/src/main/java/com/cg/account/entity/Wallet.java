@@ -2,10 +2,8 @@ package com.cg.account.entity;
 
 import com.cg.account.constants.AssetType;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Objects;
 

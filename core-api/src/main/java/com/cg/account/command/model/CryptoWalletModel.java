@@ -1,11 +1,9 @@
 package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
-import com.cg.account.constants.CryptoType;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.List;
 import java.util.Map;
 
 @Data

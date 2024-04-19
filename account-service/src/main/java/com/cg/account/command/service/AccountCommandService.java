@@ -1,7 +1,7 @@
 package com.cg.account.command.service;
 
-import com.cg.account.command.ChangeAccountStatusCommand;
 import com.cg.account.dto.AccountDTO;
+import com.cg.account.command.ChangeAccountStatusCommand;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;

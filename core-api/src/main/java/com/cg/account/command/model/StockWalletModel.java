@@ -1,7 +1,6 @@
 package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
-import com.cg.account.constants.StockSymbol;
 import lombok.Builder;
 import lombok.Data;
 

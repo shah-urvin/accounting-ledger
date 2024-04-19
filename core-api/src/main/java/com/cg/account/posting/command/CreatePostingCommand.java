@@ -1,15 +1,18 @@
-package com.cg.account.posting.event;
+package com.cg.account.posting.command;
 
-import com.cg.account.posting.constant.PostingStatus;
+import com.cg.account.constants.PostingStatus;
 import lombok.Builder;
 import lombok.Data;
+import org.axonframework.modelling.command.TargetAggregateIdentifier;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class PostingCreatedEvent {
+public class CreatePostingCommand {
+
+    @TargetAggregateIdentifier
     private String postingId;
     private String accountId;
     private String fromWalletId;

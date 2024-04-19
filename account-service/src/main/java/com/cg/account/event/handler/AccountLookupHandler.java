@@ -1,8 +1,8 @@
 package com.cg.account.event.handler;
 
 import com.cg.account.entity.AccountLookup;
-import com.cg.account.event.AccountOpenedEvent;
 import com.cg.account.repository.AccountLookupRepository;
+import com.cg.account.event.AccountOpenedEvent;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.slf4j.Logger;

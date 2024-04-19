@@ -1,8 +1,6 @@
 package com.cg.account.posting.entity;
 
-import com.cg.account.entity.Account;
-import com.cg.account.entity.Wallet;
-import com.cg.account.posting.constant.PostingStatus;
+import com.cg.account.constants.PostingStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;

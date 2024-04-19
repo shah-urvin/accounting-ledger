@@ -1,8 +1,6 @@
 package com.cg.account.transaction;
 
 import com.cg.account.command.model.WalletModel;
-import com.cg.account.entity.Wallet;
-import com.cg.account.posting.dto.WalletChangeDTO;
 
 import java.math.BigDecimal;
 

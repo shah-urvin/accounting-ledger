@@ -1,6 +1,6 @@
 package com.cg.account.posting.command;
 
-import com.cg.account.posting.constant.PostingStatus;
+import com.cg.account.constants.PostingStatus;
 import lombok.Builder;
 import lombok.Data;
 import org.axonframework.modelling.command.TargetAggregateIdentifier;

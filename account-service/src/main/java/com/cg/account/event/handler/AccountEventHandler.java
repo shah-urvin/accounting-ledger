@@ -1,14 +1,13 @@
 package com.cg.account.event.handler;
 
-import com.cg.account.command.model.*;
-import com.cg.account.constants.AccountStatus;
-import com.cg.account.constants.AssetType;
 import com.cg.account.entity.*;
+import com.cg.account.exception.AccountNotFoundException;
+import com.cg.account.repository.AccountRepository;
+import com.cg.account.constants.AccountStatus;
 import com.cg.account.event.AccountOpenedEvent;
 import com.cg.account.event.AccountStatusChangedEvent;
 import com.cg.account.event.AccountUpdateProcessedEvent;
-import com.cg.account.exception.AccountNotFoundException;
-import com.cg.account.repository.AccountRepository;
+import com.cg.account.command.model.*;
 import org.axonframework.common.StringUtils;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
@@ -18,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Component
 @ProcessingGroup("account-group")
@@ -60,7 +57,7 @@ public class AccountEventHandler {
         addWalletFromWalletModel(accountUpdateProcessedEvent.getWallets().get(accountUpdateProcessedEvent.getToWalletId()),account,accountUpdateProcessedEvent.getToSymbol() );
     }
 
-    private void addWalletFromWalletModel(WalletModel walletModel,Account account, String symbol) {
+    private void addWalletFromWalletModel(WalletModel walletModel, Account account, String symbol) {
         switch (walletModel.getAssetType()) {
             case FIAT_USD -> {
                 USDWalletModel usdWalletModel = (USDWalletModel) walletModel;

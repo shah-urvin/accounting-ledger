@@ -1,14 +1,13 @@
 package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
-import com.cg.account.entity.Account;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
 
 @Data
-public class USDWalletModel extends WalletModel{
+public class USDWalletModel extends WalletModel {
     private BigDecimal balance;
 
     @Builder

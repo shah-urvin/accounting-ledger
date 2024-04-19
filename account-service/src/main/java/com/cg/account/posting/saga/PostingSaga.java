@@ -1,10 +1,10 @@
 package com.cg.account.posting.saga;
 
 import com.cg.account.command.ProcessUpdateAccountCommand;
-import com.cg.account.constants.AccountStatus;
-import com.cg.account.event.AccountUpdateProcessedEvent;
 import com.cg.account.posting.command.ChangePostingCommand;
-import com.cg.account.posting.constant.PostingStatus;
+import com.cg.account.constants.AccountStatus;
+import com.cg.account.constants.PostingStatus;
+import com.cg.account.event.AccountUpdateProcessedEvent;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
 import org.axonframework.commandhandling.CommandCallback;

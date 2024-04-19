@@ -1,16 +1,12 @@
 package com.cg.account.event;
 
-import com.cg.account.command.model.WalletModel;
 import com.cg.account.constants.AccountStatus;
-import com.cg.account.constants.AssetType;
-import com.cg.account.entity.Wallet;
+import com.cg.account.command.model.WalletModel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Data

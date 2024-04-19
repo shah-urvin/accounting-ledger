@@ -1,17 +1,17 @@
 package com.cg.account.aggregate;
 
+import com.cg.account.repository.AccountRepository;
+import com.cg.account.transaction.WalletOperations;
+import com.cg.account.transaction.factory.WalletOperationsFactory;
 import com.cg.account.command.ChangeAccountStatusCommand;
 import com.cg.account.command.OpenAccountCommand;
 import com.cg.account.command.ProcessUpdateAccountCommand;
-import com.cg.account.command.model.*;
 import com.cg.account.constants.AccountStatus;
 import com.cg.account.constants.FiatCurrency;
 import com.cg.account.event.AccountOpenedEvent;
 import com.cg.account.event.AccountStatusChangedEvent;
 import com.cg.account.event.AccountUpdateProcessedEvent;
-import com.cg.account.repository.AccountRepository;
-import com.cg.account.transaction.WalletOperations;
-import com.cg.account.transaction.factory.WalletOperationsFactory;
+import com.cg.account.command.model.*;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.eventsourcing.EventSourcingHandler;
 import org.axonframework.modelling.command.AggregateIdentifier;
@@ -43,7 +43,8 @@ public class AccountAggregate {
     public AccountAggregate() {}
 
     @CommandHandler
-    public AccountAggregate(OpenAccountCommand openAccountCommand,AccountRepository accountRepository) {
+    public AccountAggregate(OpenAccountCommand openAccountCommand, AccountRepository accountRepository) {
+        logger.info("OpenAccountCommand command invoked...");
         this.accountRepository = accountRepository;
         // Create Account and wallets.
 
@@ -79,7 +80,7 @@ public class AccountAggregate {
     }
 
     @CommandHandler
-    public void on(ProcessUpdateAccountCommand processUpdateAccountCommand,AccountRepository accountRepository) {
+    public void on(ProcessUpdateAccountCommand processUpdateAccountCommand, AccountRepository accountRepository) {
         logger.info("ProcessUpdateAccountCommand invoked...");
         this.accountRepository = accountRepository;
         this.accountId = processUpdateAccountCommand.getAccountId();

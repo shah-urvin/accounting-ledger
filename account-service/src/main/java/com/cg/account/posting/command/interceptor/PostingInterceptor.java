@@ -1,13 +1,13 @@
 package com.cg.account.posting.command.interceptor;
 
-import com.cg.account.constants.AccountStatus;
 import com.cg.account.entity.Account;
 import com.cg.account.entity.AccountLookup;
 import com.cg.account.exception.AccountNotFoundException;
 import com.cg.account.exception.InoperativeAccountException;
-import com.cg.account.posting.command.CreatePostingCommand;
 import com.cg.account.repository.AccountLookupRepository;
 import com.cg.account.repository.AccountRepository;
+import com.cg.account.posting.command.CreatePostingCommand;
+import com.cg.account.constants.AccountStatus;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;

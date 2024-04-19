@@ -1,9 +1,7 @@
 package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
-import com.cg.account.entity.Account;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 

@@ -1,10 +1,10 @@
 package com.cg.account.command.interceptor;
 
 
-import com.cg.account.command.ChangeAccountStatusCommand;
-import com.cg.account.command.OpenAccountCommand;
 import com.cg.account.entity.AccountLookup;
 import com.cg.account.repository.AccountLookupRepository;
+import com.cg.account.command.ChangeAccountStatusCommand;
+import com.cg.account.command.OpenAccountCommand;
 import org.axonframework.commandhandling.CommandMessage;
 import org.axonframework.messaging.MessageDispatchInterceptor;
 import org.slf4j.Logger;

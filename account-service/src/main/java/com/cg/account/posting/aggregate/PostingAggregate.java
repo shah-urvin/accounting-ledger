@@ -1,13 +1,13 @@
 package com.cg.account.posting.aggregate;
 
 import com.cg.account.exception.PostingNotFoundException;
+import com.cg.account.posting.entity.Posting;
+import com.cg.account.posting.repository.PostingRepository;
 import com.cg.account.posting.command.ChangePostingCommand;
 import com.cg.account.posting.command.CreatePostingCommand;
-import com.cg.account.posting.constant.PostingStatus;
-import com.cg.account.posting.entity.Posting;
+import com.cg.account.constants.PostingStatus;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
-import com.cg.account.posting.repository.PostingRepository;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.common.StringUtils;
 import org.axonframework.eventsourcing.EventSourcingHandler;

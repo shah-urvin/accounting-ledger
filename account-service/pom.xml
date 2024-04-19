@@ -76,6 +76,11 @@
             <version>1.18.32</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>com.cg</groupId>
+            <artifactId>core-api</artifactId>
+            <version>3.2.4</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
