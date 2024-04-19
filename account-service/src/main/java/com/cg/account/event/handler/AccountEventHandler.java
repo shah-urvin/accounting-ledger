@@ -6,14 +6,20 @@ import com.cg.account.constants.AssetType;
 import com.cg.account.entity.*;
 import com.cg.account.event.AccountOpenedEvent;
 import com.cg.account.event.AccountStatusChangedEvent;
+import com.cg.account.event.AccountUpdateProcessedEvent;
 import com.cg.account.exception.AccountNotFoundException;
 import com.cg.account.repository.AccountRepository;
+import org.axonframework.common.StringUtils;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 @ProcessingGroup("account-group")
@@ -33,43 +39,9 @@ public class AccountEventHandler {
 
         // Create 5 Wallets (USDWallet,HKDWallet,CryptoWallet,StockWallet
         // Adding USD Wallet
-        USDWalletModel usdWalletModel = (USDWalletModel) accountOpenedEvent.getWallets().get(AssetType.FIAT_USD);
-        account.getWallets().add(USDWallet.builder()
-                .account(account)
-                .walletId(usdWalletModel.getWalletId())
-                .balance(usdWalletModel.getBalance()).build());
-
-        // Adding HKD Wallet
-        HKDWalletModel hkdWalletModel = (HKDWalletModel) accountOpenedEvent.getWallets().get(AssetType.FIAT_HKD);
-        account.getWallets().add(HKDWallet.builder()
-                .account(account)
-                .walletId(hkdWalletModel.getWalletId())
-                .balance(hkdWalletModel.getBalance()).build());
-
-        // Adding the Crypto Wallet
-        CryptoWalletModel cryptoWalletModel = (CryptoWalletModel) accountOpenedEvent.getWallets().get(AssetType.CRYPTO);
-        account.getWallets().add(CryptoWallet.builder()
-                .account(account)
-                .walletId(cryptoWalletModel.getWalletId())
-                .balanceQty(cryptoWalletModel.getBalanceQty())
-                .cryptoType(cryptoWalletModel.getCryptoType()).build());
-
-        // Adding the Stock Wallet
-        StockWalletModel stockWalletModel = (StockWalletModel) accountOpenedEvent.getWallets().get(AssetType.STOCK);
-        account.getWallets().add(StockWallet.builder()
-                .account(account)
-                .walletId(stockWalletModel.getWalletId())
-                .balanceQty(stockWalletModel.getBalanceQty())
-                .stockSymbol(stockWalletModel.getStockSymbol()).build());
-
-        // Adding the Fund Wallet
-        FundWalletModel fundWalletModel = (FundWalletModel) accountOpenedEvent.getWallets().get(AssetType.FUND);
-        account.getWallets().add(FundWallet.builder()
-                .account(account)
-                .walletId(fundWalletModel.getWalletId())
-                .balance(fundWalletModel.getBalance())
-                .fundName(fundWalletModel.getFundName()).build());
-
+        accountOpenedEvent.getWallets().values().stream().forEach(walletModel -> {
+            addWalletFromWalletModel(walletModel,account,null);
+        });
         accountRepository.save(account);
     }
 
@@ -80,4 +52,82 @@ public class AccountEventHandler {
         accountRepository.save(account);
         logger.info("Persisted the account Status");
     }
+
+    @EventHandler
+    public void on(AccountUpdateProcessedEvent accountUpdateProcessedEvent) {
+        Account account = accountRepository.findById(accountUpdateProcessedEvent.getAccountId()).orElseThrow(() -> new AccountNotFoundException(accountUpdateProcessedEvent.getAccountId()));
+        addWalletFromWalletModel(accountUpdateProcessedEvent.getWallets().get(accountUpdateProcessedEvent.getFromWalletId()),account,accountUpdateProcessedEvent.getFromSymbol() );
+        addWalletFromWalletModel(accountUpdateProcessedEvent.getWallets().get(accountUpdateProcessedEvent.getToWalletId()),account,accountUpdateProcessedEvent.getToSymbol() );
+    }
+
+    private void addWalletFromWalletModel(WalletModel walletModel,Account account, String symbol) {
+        switch (walletModel.getAssetType()) {
+            case FIAT_USD -> {
+                USDWalletModel usdWalletModel = (USDWalletModel) walletModel;
+                account.getWallets().add(USDWallet.builder()
+                        .account(account)
+                        .walletId(usdWalletModel.getWalletId())
+                        .balance(usdWalletModel.getBalance())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+                break;
+            }
+            case FIAT_HKD -> {
+                HKDWalletModel hkdWalletModel = (HKDWalletModel) walletModel;
+                account.getWallets().add(HKDWallet.builder()
+                        .account(account)
+                        .walletId(hkdWalletModel.getWalletId())
+                        .balance(hkdWalletModel.getBalance())
+                        .timestamp(LocalDateTime.now())
+                        .build());
+                break;
+            }
+            case CRYPTO -> {
+                CryptoWalletModel cryptoWalletModel = (CryptoWalletModel) walletModel;
+                cryptoWalletModel.getCryptoData().values().stream().forEach(cryptoData -> {
+                    if(StringUtils.emptyOrNull(symbol) || (StringUtils.nonEmptyOrNull(symbol) && cryptoData.getCryptoType().getSymbol().equals(symbol))) {
+                        account.getWallets().add(CryptoWallet.builder()
+                                .account(account)
+                                .walletId(cryptoWalletModel.getWalletId())
+                                .balanceQty(cryptoData.getBalance())
+                                .cryptoType(cryptoData.getCryptoType())
+                                .timestamp(LocalDateTime.now())
+                                .build());
+                    }
+                });
+                break;
+            }
+            case STOCK -> {
+                StockWalletModel stockWalletModel = (StockWalletModel) walletModel;
+                stockWalletModel.getStockData().values().stream().forEach(stockData -> {
+                    if(StringUtils.emptyOrNull(symbol) || (StringUtils.nonEmptyOrNull(symbol) && stockData.getStockSymbol().getSymbol().equals(symbol))) {
+                        account.getWallets().add(StockWallet.builder()
+                                .account(account)
+                                .walletId(stockWalletModel.getWalletId())
+                                .balanceQty(stockData.getBalanceQty())
+                                .stockSymbol(stockData.getStockSymbol())
+                                .timestamp(LocalDateTime.now())
+                                .build());
+                    }
+                });
+                break;
+            }
+            case FUND -> {
+                FundWalletModel fundWalletModel = (FundWalletModel)walletModel;
+                fundWalletModel.getFundData().values().stream().forEach(fundData -> {
+                    if(StringUtils.emptyOrNull(symbol) || (StringUtils.nonEmptyOrNull(symbol) && fundData.getFundType().getSymbol().equals(symbol))) {
+                        account.getWallets().add(FundWallet.builder()
+                                .account(account)
+                                .walletId(fundWalletModel.getWalletId())
+                                .balance(fundData.getBalance())
+                                .fundName(fundData.getFundType())
+                                .timestamp(LocalDateTime.now())
+                                .build());
+                    }
+                });
+                break;
+            }
+        }
+    }
+
 }

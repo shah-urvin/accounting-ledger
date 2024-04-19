@@ -20,8 +20,8 @@ public class HKDWallet extends Wallet{
     private BigDecimal balance;
 
     @Builder
-    public HKDWallet(String walletId, Account account, BigDecimal balance) {
-        super(walletId,account, AssetType.FIAT_HKD);
+    public HKDWallet(String walletId, Account account, BigDecimal balance,LocalDateTime timestamp) {
+        super(walletId,account, AssetType.FIAT_HKD,timestamp);
         this.balance=balance;
     }
 }

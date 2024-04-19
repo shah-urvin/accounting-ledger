@@ -1,5 +1,6 @@
 package com.cg.account.transaction;
 
+import com.cg.account.command.model.*;
 import com.cg.account.constants.FiatCurrencyRateConstants;
 import com.cg.account.entity.*;
 import com.cg.account.exception.InsufficientBalanceException;
@@ -11,8 +12,8 @@ import java.time.LocalDateTime;
 public class HKDWalletOperations implements WalletOperations {
 
     @Override
-    public void debit(Wallet wallet, BigDecimal txnAmount) {
-        HKDWallet hkdWallet = (HKDWallet) wallet;
+    public void debit(WalletModel wallet, BigDecimal txnAmount) {
+        HKDWalletModel hkdWallet = (HKDWalletModel) wallet;
         if (hkdWallet.getBalance().compareTo(txnAmount) >=0) {
             hkdWallet.setBalance((hkdWallet.getBalance().subtract(txnAmount)));
         } else {
@@ -22,26 +23,26 @@ public class HKDWalletOperations implements WalletOperations {
     }
 
     @Override
-    public void credit(Wallet fromWallet,Wallet toWallet,BigDecimal txnAmount) {
-        HKDWallet hkdWallet = (HKDWallet) toWallet;
+    public void credit(WalletModel fromWallet, WalletModel toWallet, BigDecimal txnAmount, String symbol) {
+        HKDWalletModel hkdWallet = (HKDWalletModel) toWallet;
         switch (fromWallet.getAssetType()) {
             case FIAT_USD -> {
                 hkdWallet.setBalance(hkdWallet.getBalance().add(FiatCurrencyRateConstants.USD_TO_HKD.multiply(txnAmount)));
                 break;
             }
             case CRYPTO -> {
-                CryptoWallet cryptoWallet = (CryptoWallet) fromWallet;
-                hkdWallet.setBalance(hkdWallet.getBalance().add(cryptoWallet.getCryptoType().getHkdRate().multiply(txnAmount)));
+                CryptoWalletModel cryptoWallet = (CryptoWalletModel) fromWallet;
+                hkdWallet.setBalance(hkdWallet.getBalance().add(cryptoWallet.getCryptoData().get(symbol).getCryptoType().getHkdRate().multiply(txnAmount)));
                 break;
             }
             case STOCK -> {
-                StockWallet stockWallet = (StockWallet) fromWallet;
-                hkdWallet.setBalance(hkdWallet.getBalance().add(stockWallet.getStockSymbol().getHkdRate().multiply(txnAmount)));
+                StockWalletModel stockWallet = (StockWalletModel) fromWallet;
+                hkdWallet.setBalance(hkdWallet.getBalance().add(stockWallet.getStockData().get(symbol).getStockSymbol().getHkdRate().multiply(txnAmount)));
                 break;
             }
             case FUND -> {
-                FundWallet fundWallet = (FundWallet) fromWallet;
-                hkdWallet.setBalance(hkdWallet.getBalance().add(fundWallet.getFundName().getHkdRate().multiply(txnAmount)));
+                FundWalletModel fundWallet = (FundWalletModel) fromWallet;
+                hkdWallet.setBalance(hkdWallet.getBalance().add(fundWallet.getFundData().get(symbol).getFundType().getHkdRate().multiply(txnAmount)));
                 break;
             }
         }

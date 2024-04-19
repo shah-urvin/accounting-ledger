@@ -23,8 +23,8 @@ public class StockWallet extends Wallet{
     private BigDecimal balanceQty;
 
     @Builder
-    public StockWallet(String walletId, Account account, StockSymbol stockSymbol, BigDecimal balanceQty) {
-        super(walletId,account, AssetType.STOCK);
+    public StockWallet(String walletId, Account account, StockSymbol stockSymbol, BigDecimal balanceQty,LocalDateTime timestamp) {
+        super(walletId,account, AssetType.STOCK,timestamp);
         this.stockSymbol=stockSymbol;
         this.balanceQty = balanceQty;
     }

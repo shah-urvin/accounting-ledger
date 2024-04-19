@@ -13,6 +13,8 @@ public class PostingDTO {
     private String postingId;
     private String accountId;
     private String fromWalletId;
+    private String fromSymbol;
+    private String toSymbol;
     private String toWalletId;
     private PostingStatus postingStatus;
     private BigDecimal txnAmount;

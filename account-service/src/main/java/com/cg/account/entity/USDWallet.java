@@ -20,8 +20,8 @@ public class USDWallet extends Wallet {
     private BigDecimal balance;
 
     @Builder
-    public USDWallet(String walletId, Account account, BigDecimal balance) {
-        super(walletId, account, AssetType.FIAT_USD);
+    public USDWallet(String walletId, Account account, BigDecimal balance, LocalDateTime timestamp) {
+        super(walletId, account, AssetType.FIAT_USD,timestamp);
         this.balance = balance;
     }
 }

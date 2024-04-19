@@ -15,6 +15,9 @@ import java.util.Objects;
 public abstract class Wallet {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
     @Column(name="wallet_id")
     private String walletId;
 
@@ -26,12 +29,16 @@ public abstract class Wallet {
     @Enumerated(EnumType.STRING)
     private AssetType assetType;
 
+    @Column(name = "time_stamp")
+    private LocalDateTime timestamp;
+
     public Wallet() {}
 
-    public Wallet(String walletId, Account account, AssetType assetType) {
+    public Wallet(String walletId, Account account, AssetType assetType, LocalDateTime timestamp) {
         this.walletId = walletId;
         this.account = account;
         this.assetType = assetType;
+        this.timestamp = timestamp;
     }
 
 

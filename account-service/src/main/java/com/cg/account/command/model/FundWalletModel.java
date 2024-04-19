@@ -1,22 +1,21 @@
 package com.cg.account.command.model;
 
 import com.cg.account.constants.AssetType;
+import com.cg.account.constants.CryptoType;
 import com.cg.account.constants.FundType;
-import com.cg.account.entity.Account;
 import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.Map;
 
 @Data
 public class FundWalletModel extends WalletModel {
-    private FundType fundName;
-    private BigDecimal balance;
+    private Map<String, FundDataModel> fundData;
 
     @Builder
-    public FundWalletModel(String walletId, String accountId, FundType fundName, BigDecimal balance) {
+    public FundWalletModel(String walletId, String accountId, Map<String, FundDataModel> fundData) {
         super(walletId,accountId, AssetType.FUND);
-        this.fundName = fundName;
-        this.balance = balance;
+        this.fundData = fundData;
     }
 }

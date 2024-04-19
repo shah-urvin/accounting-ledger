@@ -37,7 +37,9 @@ public class PostingSaga {
                 .accountStatus(AccountStatus.OPEN)
                 .postingId(postingCreatedEvent.getPostingId())
                 .fromWalletId(postingCreatedEvent.getFromWalletId())
+                .fromSymbol(postingCreatedEvent.getFromSymbol())
                 .toWalletId(postingCreatedEvent.getToWalletId())
+                .toSymbol(postingCreatedEvent.getToSymbol())
                 .txnAmount(postingCreatedEvent.getTxnAmount())
                 .build());
     }

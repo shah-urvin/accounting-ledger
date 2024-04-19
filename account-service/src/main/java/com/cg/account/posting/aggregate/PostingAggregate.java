@@ -1,22 +1,13 @@
 package com.cg.account.posting.aggregate;
 
-import com.cg.account.entity.Account;
-import com.cg.account.exception.AccountNotFoundException;
-import com.cg.account.exception.InsufficientBalanceException;
 import com.cg.account.exception.PostingNotFoundException;
 import com.cg.account.posting.command.ChangePostingCommand;
 import com.cg.account.posting.command.CreatePostingCommand;
-import com.cg.account.posting.command.ProcessPostingCommand;
 import com.cg.account.posting.constant.PostingStatus;
-import com.cg.account.posting.dto.WalletChangeDTO;
 import com.cg.account.posting.entity.Posting;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
-import com.cg.account.posting.event.PostingProcessedEvent;
 import com.cg.account.posting.repository.PostingRepository;
-import com.cg.account.repository.AccountRepository;
-import com.cg.account.transaction.WalletOperations;
-import com.cg.account.transaction.factory.WalletOperationsFactory;
 import org.axonframework.commandhandling.CommandHandler;
 import org.axonframework.common.StringUtils;
 import org.axonframework.eventsourcing.EventSourcingHandler;
@@ -27,8 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 import static org.axonframework.modelling.command.AggregateLifecycle.apply;

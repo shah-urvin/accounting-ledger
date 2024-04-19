@@ -5,17 +5,15 @@ import com.cg.account.constants.StockSymbol;
 import lombok.Builder;
 import lombok.Data;
 
-import java.math.BigDecimal;
+import java.util.Map;
 
 @Data
 public class StockWalletModel extends WalletModel {
-    private StockSymbol stockSymbol;
-    private BigDecimal balanceQty;
+    private Map<String,StockDataModel> stockData;
 
     @Builder
-    public StockWalletModel(String walletId, String accountId, StockSymbol stockSymbol, BigDecimal balanceQty) {
+    public StockWalletModel(String walletId, String accountId, Map<String,StockDataModel> stockData) {
         super(walletId,accountId, AssetType.STOCK);
-        this.stockSymbol=stockSymbol;
-        this.balanceQty = balanceQty;
+        this.stockData = stockData;
     }
 }

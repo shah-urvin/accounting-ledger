@@ -19,5 +19,5 @@ import java.util.Map;
 public class AccountOpenedEvent {
     private String accountId;
     private AccountStatus status;
-    private Map<AssetType, WalletModel> wallets = new HashMap<>();
+    private Map<String, WalletModel> wallets = new HashMap<>();
 }

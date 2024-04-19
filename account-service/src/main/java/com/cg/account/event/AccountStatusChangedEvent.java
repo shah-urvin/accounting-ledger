@@ -1,6 +1,7 @@
 package com.cg.account.event;
 
 import com.cg.account.constants.AccountStatus;
+import com.cg.account.constants.AssetType;
 import lombok.Builder;
 import lombok.Data;
 

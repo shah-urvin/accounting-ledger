@@ -24,8 +24,8 @@ public class CryptoWallet extends Wallet{
     private BigDecimal balanceQty;
 
     @Builder
-    public CryptoWallet(String walletId, Account account,CryptoType cryptoType,BigDecimal balanceQty) {
-        super(walletId,account, AssetType.CRYPTO);
+    public CryptoWallet(String walletId, Account account,CryptoType cryptoType,BigDecimal balanceQty,LocalDateTime timestamp) {
+        super(walletId,account, AssetType.CRYPTO,timestamp);
         this.cryptoType = cryptoType;
         this.balanceQty = balanceQty;
     }

@@ -16,5 +16,7 @@ public class ProcessUpdateAccountCommand {
     private String postingId;
     private String fromWalletId;
     private String toWalletId;
+    private String fromSymbol;
+    private String toSymbol;
     private BigDecimal txnAmount;
 }
