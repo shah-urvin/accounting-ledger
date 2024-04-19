@@ -7,6 +7,9 @@ import com.cg.account.posting.command.ChangePostingCommand;
 import com.cg.account.posting.constant.PostingStatus;
 import com.cg.account.posting.event.PostingChangedEvent;
 import com.cg.account.posting.event.PostingCreatedEvent;
+import org.axonframework.commandhandling.CommandCallback;
+import org.axonframework.commandhandling.CommandMessage;
+import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.SagaEventHandler;
 import org.axonframework.modelling.saga.SagaLifecycle;
@@ -15,6 +18,7 @@ import org.axonframework.spring.stereotype.Saga;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 @Saga
@@ -33,15 +37,23 @@ public class PostingSaga {
         // Send ProcessPostingCommand
 
         commandGateway.send(ProcessUpdateAccountCommand.builder()
-                .accountId(postingCreatedEvent.getAccountId())
-                .accountStatus(AccountStatus.OPEN)
-                .postingId(postingCreatedEvent.getPostingId())
-                .fromWalletId(postingCreatedEvent.getFromWalletId())
-                .fromSymbol(postingCreatedEvent.getFromSymbol())
-                .toWalletId(postingCreatedEvent.getToWalletId())
-                .toSymbol(postingCreatedEvent.getToSymbol())
-                .txnAmount(postingCreatedEvent.getTxnAmount())
-                .build());
+                        .accountId(postingCreatedEvent.getAccountId())
+                        .accountStatus(AccountStatus.OPEN)
+                        .postingId(postingCreatedEvent.getPostingId())
+                        .fromWalletId(postingCreatedEvent.getFromWalletId())
+                        .fromSymbol(postingCreatedEvent.getFromSymbol())
+                        .toWalletId(postingCreatedEvent.getToWalletId())
+                        .toSymbol(postingCreatedEvent.getToSymbol())
+                        .txnAmount(postingCreatedEvent.getTxnAmount()).build()
+                , new CommandCallback<ProcessUpdateAccountCommand, Object>() {
+                    @Override
+                    public void onResult(@Nonnull CommandMessage<? extends ProcessUpdateAccountCommand> commandMessage,
+                                         @Nonnull CommandResultMessage<?> commandResultMessage) {
+                        if(commandResultMessage.isExceptional()) {
+                            // Start a compensating transaction
+                        }
+                    }
+                });
     }
 
     @SagaEventHandler(associationProperty = "accountId")
