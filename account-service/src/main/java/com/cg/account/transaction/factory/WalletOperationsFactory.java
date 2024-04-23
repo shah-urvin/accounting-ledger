@@ -13,10 +13,10 @@ public class WalletOperationsFactory {
                 return new USDWalletOperations();
             }
             case CRYPTO -> {
-                return new StockWalletOperations();
+                return new CryptoWalletOperations();
             }
             case STOCK -> {
-                return new CryptoWalletOperations();
+                return new StockWalletOperations();
             }
             case FUND -> {
                 return new FundWalletOperations();

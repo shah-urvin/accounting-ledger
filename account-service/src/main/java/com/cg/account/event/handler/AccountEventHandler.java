@@ -11,6 +11,7 @@ import com.cg.account.command.model.*;
 import org.axonframework.common.StringUtils;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;
+import org.axonframework.messaging.interceptors.ExceptionHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -125,6 +126,11 @@ public class AccountEventHandler {
                 break;
             }
         }
+    }
+
+    @ExceptionHandler(resultType = Exception.class)
+    public void handle(Exception e) throws Exception{
+        throw e;
     }
 
 }

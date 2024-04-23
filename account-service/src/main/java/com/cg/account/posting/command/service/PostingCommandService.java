@@ -25,7 +25,9 @@ public class PostingCommandService {
                 commandGateway.send(CreatePostingCommand.builder()
                 .accountId(postingDTO.getAccountId())
                 .fromWalletId(postingDTO.getFromWalletId())
+                .fromSymbol(postingDTO.getFromSymbol())
                 .toWalletId(postingDTO.getToWalletId())
+                .toSymbol(postingDTO.getToSymbol())
                 .txnAmount(postingDTO.getTxnAmount()).build());
             });
             logger.info("createPosting service completed...");

@@ -31,7 +31,9 @@ public class PostingAggregate {
     private String postingId;
     private String accountId;
     private String fromWalletId;
+    private String fromSymbol;
     private String toWalletId;
+    private String toSymbol;
     private BigDecimal txnAmount;
     private PostingStatus postingStatus;
     private LocalDateTime postingTime;
@@ -51,7 +53,9 @@ public class PostingAggregate {
         .accountId(createPostingCommand.getAccountId())
         .postingId(UUID.randomUUID().toString())
         .fromWalletId(createPostingCommand.getFromWalletId())
+                .fromSymbol(createPostingCommand.getFromSymbol())
         .toWalletId(createPostingCommand.getToWalletId())
+                .toSymbol(createPostingCommand.getToSymbol())
         .postingStatus(PostingStatus.PENDING)
         .txnAmount(createPostingCommand.getTxnAmount())
         .postingTime(LocalDateTime.now()).build());
@@ -67,7 +71,9 @@ public class PostingAggregate {
             this.accountId = postingCreatedEvent.getAccountId();
             this.postingId = postingCreatedEvent.getPostingId();
             this.fromWalletId = postingCreatedEvent.getFromWalletId();
+            this.fromSymbol = postingCreatedEvent.getFromSymbol();
             this.toWalletId = postingCreatedEvent.getToWalletId();
+            this.toSymbol = postingCreatedEvent.getToSymbol();
             this.postingStatus = postingCreatedEvent.getPostingStatus();
             this.txnAmount = postingCreatedEvent.getTxnAmount();
             this.postingTime = postingCreatedEvent.getPostingTime();

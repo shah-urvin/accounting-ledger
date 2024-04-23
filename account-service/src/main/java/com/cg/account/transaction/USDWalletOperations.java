@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 public class USDWalletOperations implements WalletOperations{
 
     @Override
-    public void debit(WalletModel wallet, BigDecimal txnAmount) {
+    public void debit(WalletModel wallet, BigDecimal txnAmount,String symbol) {
         USDWalletModel usdWallet = (USDWalletModel) wallet;
         if (usdWallet.getBalance().compareTo(txnAmount) >=0) {
             usdWallet.setBalance((usdWallet.getBalance().subtract(txnAmount)));

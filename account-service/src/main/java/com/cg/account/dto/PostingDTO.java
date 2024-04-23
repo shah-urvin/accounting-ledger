@@ -19,6 +19,8 @@ public class PostingDTO {
     private String fromWalletId;
     @NotBlank(message = "toWalletId is a required field.")
     private String toWalletId;
+    private String fromSymbol;
+    private String toSymbol;
     @Min(value = 0,message = "Transaction amount must be greater than 0.")
     private BigDecimal txnAmount;
     private LocalDate txnTime;

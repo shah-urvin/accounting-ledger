@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 public class HKDWalletOperations implements WalletOperations {
 
     @Override
-    public void debit(WalletModel wallet, BigDecimal txnAmount) {
+    public void debit(WalletModel wallet, BigDecimal txnAmount,String symbol) {
         HKDWalletModel hkdWallet = (HKDWalletModel) wallet;
         if (hkdWallet.getBalance().compareTo(txnAmount) >=0) {
             hkdWallet.setBalance((hkdWallet.getBalance().subtract(txnAmount)));

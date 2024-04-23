@@ -90,6 +90,8 @@ public class AccountAggregate {
                 .postingId(processUpdateAccountCommand.getPostingId())
                 .fromWalletId(processUpdateAccountCommand.getFromWalletId())
                 .toWalletId(processUpdateAccountCommand.getToWalletId())
+                .fromSymbol(processUpdateAccountCommand.getFromSymbol())
+                .toSymbol(processUpdateAccountCommand.getToSymbol())
                 .txnAmount(processUpdateAccountCommand.getTxnAmount())
                 .wallets(wallets)
                 .build());
@@ -111,6 +113,7 @@ public class AccountAggregate {
         this.wallets.put(usdWalletId, USDWalletModel.builder()
                 .accountId(openAccountCommand.getAccountId())
                 .walletId(usdWalletId.toString())
+
                 .balance(FiatCurrency.USD.getInitialBalance()).build());
 
         // Adding HKD Wallet
@@ -179,12 +182,12 @@ public class AccountAggregate {
                 .balanceQty(CAPGEMINI.getInitialBalance())
                 .build());
         stockDataModelMap.put(HSBC.getSymbol(),StockDataModel.builder()
-                .stockSymbol(CAPGEMINI)
-                .balanceQty(CAPGEMINI.getInitialBalance())
+                .stockSymbol(HSBC)
+                .balanceQty(HSBC.getInitialBalance())
                 .build());
         stockDataModelMap.put(CITI.getSymbol(),StockDataModel.builder()
-                .stockSymbol(CAPGEMINI)
-                .balanceQty(CAPGEMINI.getInitialBalance())
+                .stockSymbol(CITI)
+                .balanceQty(CITI.getInitialBalance())
                 .build());
         return stockDataModelMap;
     }
@@ -222,7 +225,7 @@ public class AccountAggregate {
         WalletOperations creditOperations = WalletOperationsFactory.getWalletOperations(toWalletModel.getAssetType());
 
         // Perform debit and credit Operations
-        debitOperation.debit(wallets.get(processUpdateAccountCommand.getFromWalletId()), processUpdateAccountCommand.getTxnAmount());
+        debitOperation.debit(wallets.get(processUpdateAccountCommand.getFromWalletId()), processUpdateAccountCommand.getTxnAmount(),processUpdateAccountCommand.getFromSymbol());
         creditOperations.credit(wallets.get(processUpdateAccountCommand.getFromWalletId())
                 ,wallets.get(processUpdateAccountCommand.getToWalletId())
                 ,processUpdateAccountCommand.getTxnAmount()

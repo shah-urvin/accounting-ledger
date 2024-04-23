@@ -5,6 +5,6 @@ import com.cg.account.command.model.WalletModel;
 import java.math.BigDecimal;
 
 public interface WalletOperations {
-    void debit(WalletModel wallet, BigDecimal txnAmount);
+    void debit(WalletModel wallet, BigDecimal txnAmount,String symbol);
     void credit(WalletModel fromWallet, WalletModel toWallet, BigDecimal txnAmount,String symbol);
 }
